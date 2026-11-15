@@ -102,7 +102,8 @@
   /* Media: no placeholders; a missing file removes its figure, an empty section disappears */
   figure.media { margin: 0; }
   figure.media .frame { aspect-ratio: 16 / 10; border-radius: var(--radius); overflow: hidden; background: var(--bg-2); border: 1px solid var(--line); }
-  figure.media.tall .frame { aspect-ratio: 4 / 5; }
+  figure.media.tall .frame { aspect-ratio: auto; }
+  figure.media.tall img { height: auto; display: block; }
   figure.media img, figure.media video { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
   figure.media img:hover { transform: scale(1.02); }
   figure.media.missing img, figure.media.missing video { display: none; }
@@ -287,8 +288,8 @@
         </div>
       </figure>
       <figure class="media tall">
-        <div class="frame" data-kind="[ Foto ]" data-path="assets/img/vref.jpg">
-          <img src="assets/img/vref.jpg" alt="Messung der Referenzspannung mit dem Multimeter" onerror="this.closest('figure').classList.add('missing')">
+        <div class="frame" data-kind="[ Foto ]" data-path="assets/img/nema.jpg">
+          <img src="assets/img/nema.jpg" alt="NEMA-17-Schrittmotor" onerror="this.closest('figure').classList.add('missing')">
         </div>
       </figure>
     </div>
@@ -368,7 +369,7 @@
           <tr><td>1</td><td>A</td><td>Terz</td><td>Pin 38 · <code>GPIO20</code></td><td>Pin 40 · <code>GPIO21</code></td></tr>
           <tr><td>2</td><td>Z</td><td>Melodie</td><td>Pin 35 · <code>GPIO19</code></td><td>Pin 37 · <code>GPIO26</code></td></tr>
           <tr><td>3</td><td>Y</td><td>Quinte</td><td>Pin 31 · <code>GPIO6</code></td><td>Pin 33 · <code>GPIO13</code></td></tr>
-          <tr><td>4</td><td>X</td><td>Bass</td><td>Pin 21 · <code>GPIO9</code></td><td>Pin 23 · <code>GPIO11</code></td></tr>
+          <tr><td>4</td><td>X</td><td>Bass</td><td>Pin 21 · <code>GPIO9</code></td><td>Pin 23 · <code>GPIO11</csde></td></tr>
           <tr><td colspan="3">Enable (Low = an)</td><td colspan="2">Pin 7 · <code>GPIO4</code></td></tr>
           <tr><td colspan="3">Logikversorgung</td><td colspan="2">Pin 17 · 3,3 V → 5V-Pin des Shields</td></tr>
           <tr><td colspan="3">Masse</td><td colspan="2">Pin 14 · GND</td></tr>
@@ -378,9 +379,9 @@
 
     <div class="note"><b>Wichtig:</b> Die 5-V-Pins des Raspberry Pi (Pin 2 und 4) dürfen nie mit dem Shield verbunden werden. Die GPIOs vertragen nur 3,3 V. Motoren nur im ausgeschalteten Zustand an- oder abstecken.</div>
 
-    <figure class="media" style="margin-top:28px">
-      <div class="frame" data-kind="[ Schaltplan / Foto der Verkabelung ]" data-path="assets/img/schaltplan.png">
-        <img src="assets/img/schaltplan.png" alt="Detaillierter Schaltplan" onerror="this.closest('figure').classList.add('missing')">
+    <figure class="media tall" style="margin:28px auto 0;max-width:640px">
+      <div class="frame" data-kind="[ Schaltplan / Foto der Verkabelung ]" data-path="assets/img/schaltplan.jpg">
+        <a href="assets/img/schaltplan.jpg" target="_blank" rel="noopener" title="Groß öffnen"><img src="assets/img/schaltplan.jpg" alt="Detaillierter Schaltplan" onerror="this.closest('figure').classList.add('missing')"></a>
       </div>
     </figure>
   </div>
