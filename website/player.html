@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Singing Motors – Weboberfläche (Demo)</title>
+<style>
+:root{--bg:#060101;--dk:#3a0d08;--rd:#c8321c;--or:#ff8c1a;--ye:#ffd24a;--wh:#ffeccc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--or);font:15px/1.4 "Courier New",monospace;min-height:100vh;display:flex;flex-direction:column;padding:10px 10px 52px;gap:10px}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.28) 0 1px,transparent 1px 3px)}
+header{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;align-items:baseline;border-bottom:2px double var(--rd);padding-bottom:6px}
+h1{margin:0;font-size:22px;letter-spacing:3px;text-shadow:0 0 8px var(--or)}
+h2{margin:0 0 8px;font-size:13px;letter-spacing:2px;color:var(--ye)}
+.panel{border:1px solid var(--rd);padding:10px 12px;box-shadow:0 0 10px #c8321c44 inset;position:relative}
+main{display:grid;grid-template-columns:230px 1fr 340px;gap:10px;flex:1;min-height:420px}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
+dt{color:var(--rd)}dd{margin:0;text-align:right}
+canvas{position:absolute;inset:34px 8px 8px 8px;width:calc(100% - 16px);height:calc(100% - 42px)}
+#mid canvas{inset:8px;width:calc(100% - 16px);height:calc(100% - 16px)}
+ul{list-style:none;margin:0 0 10px;padding:0;max-height:180px;overflow:auto}
+li{display:flex;justify-content:space-between;align-items:center;padding:3px 6px;border-bottom:1px dashed var(--dk)}
+li.on{color:var(--ye);background:var(--dk)}
+button,.btn{font:inherit;color:var(--or);background:var(--bg);border:1px solid var(--or);padding:3px 12px;cursor:pointer;letter-spacing:1px}
+button:hover,.btn:hover{background:var(--or);color:var(--bg)}
+#ctl{display:flex;flex-direction:column}
+#bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#msg{color:var(--ye);min-height:1.4em}
+footer{position:fixed;left:10px;right:10px;bottom:10px;display:flex;gap:10px;align-items:center;background:var(--bg)}
+#prog{flex:1;height:22px;border:1px solid var(--rd);background:repeating-linear-gradient(90deg,var(--dk) 0 6px,transparent 6px 8px)}
+#fill{height:100%;width:0;background:repeating-linear-gradient(90deg,var(--or) 0 6px,transparent 6px 8px);box-shadow:0 0 10px var(--or)}
+.blink{animation:b 1s steps(2) infinite}@keyframes b{50%{opacity:.2}}
+@media(max-width:900px){main{grid-template-columns:1fr}.panel canvas{position:static;display:block;width:100%;height:320px}#mid canvas{height:380px}}
+</style></head><body>
+<header><h1>◢◤ SINGING MOTORS ◥◣</h1><span id="stat">○ BEREIT</span><span id="clock">00:00 / 00:00</span></header>
+<main>
+ <section class="panel"><h2>STATUS</h2>
+  <dl><dt>DATEI</dt><dd id="f">-</dd><dt>STIMMEN</dt><dd id="poly">0/4</dd><dt>MAX POLY</dt><dd id="mp">-</dd><dt>AVG POLY</dt><dd id="ap">-</dd><dt>TÖNE</dt><dd id="nt">-</dd><dt>REST</dt><dd id="rest">-</dd></dl>
+  <h2 style="margin-top:16px">DREHZAHL</h2>
+  <dl><dt>M1</dt><dd id="r0"></dd><dt>M2</dt><dd id="r1"></dd><dt>M3</dt><dd id="r2"></dd><dt>M4</dt><dd id="r3"></dd></dl>
+ </section>
+ <section class="panel" id="mid"><canvas id="bars"></canvas></section>
+ <section class="panel"><h2>PIANO ROLL</h2><canvas id="roll"></canvas></section>
+</main>
+<section class="panel" id="ctl"><h2>BIBLIOTHEK</h2><ul id="files"></ul>
+ <div id="bar"><label class="btn">⇪ MIDI HOCHLADEN<input type="file" id="up" accept=".mid,.midi" hidden></label><button id="stop">■ STOP</button><span id="msg"></span></div>
+</section>
+<footer><div id="prog"><div id="fill"></div></div><b id="pct">0%</b></footer>
+<script>
+// Demo-Modus: Die Seite läuft ohne Raspberry Pi, die Antworten der API werden hier simuliert.
+(()=>{
+const hz=m=>440*2**((m-69)/12),L=24,v=[[],[],[],[]];
+const mel=[69,72,76,72,74,71,67,71,72,76,79,76,74,71,69,72];
+const bass=[45,45,40,40,43,43,38,38];
+for(let i=0;i<48;i++){const t=i*.5;if(i%3!==2)v[3].push([t,t+.45,hz(mel[i%16])]);
+ if(i%2===0)v[2].push([t,t+.9,hz(mel[i%16]-4)]);
+ if(i%4===0)v[1].push([t,t+1.9,hz(bass[(i/4)%8|0]+7)]);
+ if(i%4===0)v[0].push([t,t+1.9,hz(bass[(i/4)%8|0])])}
+const song={v,maxpoly:4,avgpoly:3.1,toene:v.flat().length},t0=performance.now();
+const j=o=>Promise.resolve({ok:true,json:()=>Promise.resolve(o)});
+window.fetch=u=>{const p=String(u).split("?")[0],t=((performance.now()-t0)/1000)%L;
+ if(p==="/api/state")return j({playing:true,t,ende:L,name:"demo.mid",id:1});
+ if(p==="/api/song")return j(song);
+ if(p==="/api/files")return j(["demo.mid"]);
+ return j({ok:true})};
+})();
+</script>
+<script>
+const NAMEN=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],MIN=40,MAX=1500,C=["#c8321c","#ff8c1a","#ffd24a"];
+const $=i=>document.getElementById(i);
+let song=null,sid=-1,st={playing:false,t:0,ende:0,name:"",id:0},recv=0;
+const lvl=[0,0,0,0],peak=[0,0,0,0];
+const lg=h=>Math.max(0,Math.min(1,Math.log(h/MIN)/Math.log(MAX/MIN)));
+const mmss=s=>{s=Math.max(0,Math.floor(s));return String(s/60|0).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
+const nn=h=>{const m=Math.round(69+12*Math.log2(h/440));return NAMEN[((m%12)+12)%12]+(Math.floor(m/12)-1)};
+function hzAt(v,t){const e=song.v[v];let a=0,b=e.length;while(a<b){const m=(a+b)>>1;e[m][0]<=t?a=m+1:b=m}const x=e[a-1];return x&&t<x[1]?x[2]:0}
+const now=()=>Math.min(st.ende,st.playing?st.t+(performance.now()-recv)/1000:st.t);
+async function poll(){try{const s=await(await fetch("/api/state")).json();
+ if(s.id!==sid){sid=s.id;song=s.id?await(await fetch("/api/song")).json():null}
+ st=s;recv=performance.now()}catch(e){}setTimeout(poll,250)}
+function msg(t){$("msg").textContent=t;setTimeout(()=>{if($("msg").textContent===t)$("msg").textContent=""},5000)}
+async function api(u,o){const r=await fetch(u,o);const j=await r.json().catch(()=>({}));if(!r.ok)msg("FEHLER: "+(j.error||r.status));return r.ok}
+async function files(){try{const f=await(await fetch("/api/files")).json();const ul=$("files");ul.innerHTML="";
+ f.forEach(n=>{const li=document.createElement("li");li.className=n===st.name&&st.playing?"on":"";li.append(n);
+  const b=document.createElement("button");b.textContent="▶ PLAY";b.onclick=async()=>{await api("/api/play?file="+encodeURIComponent(n),{method:"POST"});poll()};li.append(b);ul.append(li)});
+ if(!f.length)ul.innerHTML="<li>(leer – MIDI hochladen, wird nicht gespeichert)</li>"}catch(e){}}
+$("stop").onclick=()=>api("/api/stop",{method:"POST"});
+$("up").onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ if(await api("/api/upload?name="+encodeURIComponent(f.name),{method:"POST",body:f}))msg(f.name+" hochgeladen");e.target.value="";files()};
+function fit(c){const d=devicePixelRatio||1,w=c.clientWidth*d|0,h=c.clientHeight*d|0;if(c.width!==w||c.height!==h){c.width=w;c.height=h}return[c.getContext("2d"),w,h,d]}
+let last=performance.now();
+function frame(ts){const dt=Math.min(.1,(ts-last)/1000);last=ts;const t=now(),real=st.playing?st.t+(performance.now()-recv)/1000:st.t;
+ const hz=[0,0,0,0];if(song&&st.playing&&real>=0)for(let k=0;k<4;k++)hz[k]=hzAt(k,real);
+ // Balken
+ {const[x,w,h,d]=fit($("bars")),g=x;g.clearRect(0,0,w,h);const lab=86*d,top=10*d,H=h-lab-top,N=28,sh=H/N,col=w/4,bw=col*.7;
+  for(let k=0;k<4;k++){const tg=hz[k]?Math.max(.03,lg(hz[k])):0;lvl[k]=Math.max(tg,lvl[k]-dt*1.2);peak[k]=Math.max(tg,peak[k]-dt*.12);
+   const x0=k*col+(col-bw)/2,on=Math.round(lvl[k]*N),pk=Math.round(peak[k]*N);
+   for(let i=0;i<N;i++){const y=top+H-(i+1)*sh;g.fillStyle=i<on?C[Math.min(2,3*i/N|0)]:"#2a0a06";g.fillRect(x0,y+1,bw,sh-2*d)}
+   if(pk>0){g.fillStyle="#ffeccc";g.fillRect(x0,top+H-pk*sh,bw,Math.max(2,3*d))}
+   g.textAlign="center";const cx=x0+bw/2;
+   g.fillStyle=hz[k]?"#ffeccc":"#5a1a10";g.font=`bold ${20*d}px Courier New`;g.fillText(hz[k]?nn(hz[k]):"--",cx,h-56*d);
+   g.fillStyle=hz[k]?"#ff8c1a":"#5a1a10";g.font=`${14*d}px Courier New`;g.fillText(hz[k]?hz[k].toFixed(1)+" Hz":"--- Hz",cx,h-34*d);
+   g.fillStyle=hz[k]?"#ffd24a":"#c8321c";g.fillText("M"+(k+1),cx,h-12*d);
+   $("r"+k).textContent=hz[k]?Math.round(hz[k]*.3)+" rpm":"-- rpm"}}
+ // Piano Roll: 16 s Fenster, Kopf bei 25 %
+ {const[g,w,h,d]=fit($("roll"));g.clearRect(0,0,w,h);const F=16,ph=w*.25,pps=w/F,ln=h/4;
+  for(let k=0;k<4;k++){const y0=k*ln;g.fillStyle="#1a0503";g.fillRect(0,y0+2,w,ln-4);
+   g.fillStyle="#c8321c";g.font=`${12*d}px Courier New`;g.fillText("M"+(k+1),4*d,y0+14*d);
+   if(!song)continue;const e=song.v[k];let a=0,b=e.length;const lo=real-F*.25;while(a<b){const m=(a+b)>>1;e[m][1]<lo?a=m+1:b=m}
+   for(;a<e.length&&e[a][0]<real+F*.75;a++){const[s,en,hh]=e[a],x=ph+(s-real)*pps,y=y0+4+(1-lg(hh))*(ln-14*d);
+    g.fillStyle=s<=real&&real<en?"#ffd24a":s>real?"#ff8c1a":"#a02a14";g.fillRect(x,y,Math.max(2,(en-s)*pps-1),5*d)}}
+  g.fillStyle="#ffd24a";g.fillRect(ph,0,2*d,h)}
+ // Texte
+ const idle=!st.name;$("stat").textContent=st.playing?"● SPIELT":idle?"○ BEREIT":"■ FERTIG";$("stat").className=st.playing?"blink":"";
+ $("clock").textContent=mmss(t)+" / "+mmss(st.ende);$("f").textContent=st.name||"-";
+ $("poly").textContent=hz.filter(Boolean).length+"/4";$("rest").textContent=idle?"-":mmss(st.ende-t);
+ if(song){$("mp").textContent=song.maxpoly;$("ap").textContent=song.avgpoly.toFixed(1);$("nt").textContent=song.toene}else{$("mp").textContent=$("ap").textContent=$("nt").textContent="-"}
+ const p=st.ende?100*t/st.ende:0;$("fill").style.width=p+"%";$("pct").textContent=Math.round(p)+"%";
+ requestAnimationFrame(frame)}
+poll();files();setInterval(files,3000);requestAnimationFrame(frame);
+</script></body></html>

@@ -137,6 +137,16 @@ Die Komponenten werden in folgender Reihenfolge zugeschaltet:
 
 Im bestromten Zustand wurde am Netzteil eine Stromaufnahme von etwa 0,2–0,4 A beobachtet (gemessen mit einem Motor).
 
+### 3.6 Weboberfläche auf dem Raspberry Pi
+
+`code/midi.py` startet auf dem Pi einen Webserver (Port 8080). Im Browser lassen sich MIDI-Dateien hochladen und auf den vier Motoren abspielen. Angezeigt werden Tonbalken mit Frequenz, Drehzahl je Motor, ein Piano Roll und der Fortschritt.
+
+![Weboberfläche des Raspberry Pi](website/assets/img/webplayer.png)
+
+*Abbildung 1:* Weboberfläche während der Wiedergabe (Demo-Daten). Eine interaktive Demo ohne Pi liegt unter `website/player.html`.
+
+> **Hinweis:** Die Seite hat keinen Login. Hochgeladene Dateien liegen nur im Arbeitsspeicher. Nur im vertrauten Netz verwenden.
+
 ---
 
 ## 4 Beobachtungen und Fehleranalyse
@@ -164,7 +174,6 @@ Außerdem begrenzt das verwendete Labornetzteil mit $I_{\max} = 1\ \text{A}$ den
 ## 6 Ausblick
 
 - Hardwaregestützte Impulserzeugung, z. B. über DMA-Wellenformen (`pigpio`) oder einen Mikrocontroller als Taktgeber mit dem Raspberry Pi als übergeordneter Steuerung
-- Einlesen und Aufteilen von MIDI-Dateien auf vier Stimmen (z. B. mit `mido`)
 - Dimensionierung einer 12-V-Versorgung für den Vierkanalbetrieb
 
 ---
