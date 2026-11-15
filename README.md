@@ -141,9 +141,9 @@ Im bestromten Zustand wurde am Netzteil eine Stromaufnahme von etwa 0,2–0,4 A 
 
 `code/midi.py` startet auf dem Pi einen Webserver (Port 8080). Im Browser lassen sich MIDI-Dateien hochladen und auf den vier Motoren abspielen. Angezeigt werden Tonbalken mit Frequenz, Drehzahl je Motor, ein Piano Roll und der Fortschritt.
 
-![Weboberfläche des Raspberry Pi](website/assets/img/webplayer.png)
+![Weboberfläche des Raspberry Pi](docs/assets/img/webplayer.png)
 
-*Abbildung 1:* Weboberfläche während der Wiedergabe (Demo-Daten). Eine interaktive Demo ohne Pi liegt unter `website/player.html`.
+*Abbildung 1:* Weboberfläche während der Wiedergabe (Demo-Daten). Eine interaktive Demo ohne Pi liegt unter `docs/player.html`.
 
 > **Hinweis:** Die Seite hat keinen Login. Hochgeladene Dateien liegen nur im Arbeitsspeicher. Nur im vertrauten Netz verwenden.
 
