@@ -514,7 +514,7 @@ ssh &lt;user&gt;@&lt;hostname&gt;.local "python3 ~/bergkoenig.py"</code></pre>
 <section id="webplayer">
   <div class="wrap">
     <h2><span class="num">06</span>Web-Player auf dem Pi</h2>
-    <p class="intro">Der Raspberry Pi hostet eine eigene Weboberfläche (<code>code/midi.py</code>, Port 8080). Im Browser lassen sich MIDI-Dateien hochladen und abspielen, während Balkenanzeige, Drehzahlen und Piano Roll live mitlaufen. Die Dateien liegen nur im Arbeitsspeicher, es gibt keinen Login, deshalb nur im vertrauten Netz nutzen.</p>
+    <p class="intro">Die Weboberfläche läuft auf dem Laptop (<code>code/pico_laptop.py</code>, Port 8080) und schickt die Töne per USB an den Raspberry Pi Pico (<code>code/pico.py</code>), der sie per Hardware-PWM erzeugt. Im Browser lassen sich MIDI-Dateien hochladen und abspielen, während Balkenanzeige, Drehzahlen und Piano Roll live mitlaufen. Die Dateien landen in <code>code/midis/</code> und werden bei jedem Abspielen neu gelesen. Die alte Variante für den Raspberry Pi 3B+ liegt in <code>code/pi3_midi.py</code>.</p>
     <figure class="media tall">
       <div class="frame" data-kind="[ Screenshot ]" data-path="assets/img/webplayer.png">
         <a href="player.html" target="_blank" rel="noopener" title="Demo öffnen"><img src="assets/img/webplayer.png" alt="Weboberfläche des Pi mit vier Tonbalken, Drehzahlen und Piano Roll" onerror="this.closest('figure').classList.add('missing')"></a>

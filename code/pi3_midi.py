@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Vierstimmiger Schrittmotor-Player mit Weboberfläche.
+"""Raspberry Pi 3B+: Vierstimmiger Schrittmotor-Player mit Weboberfläche (GPIO direkt am Pi).
 
-Aufruf:  python3 midi.py     -> druckt die Adresse, im Browser MIDIs hochladen (nur im RAM) und abspielen
+Aufruf:  python3 pi3_midi.py    -> druckt die Adresse, im Browser MIDIs hochladen (nur im RAM) und abspielen
 Lib:     pip install mido
 Ohne RPi.GPIO (z.B. am PC) läuft nur die Anzeige, ohne Motoren.
 Hinweis: Die Seite hat keinen Login, nur im vertrauten Netz benutzen.

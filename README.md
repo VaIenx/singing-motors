@@ -137,15 +137,32 @@ Die Komponenten werden in folgender Reihenfolge zugeschaltet:
 
 Im bestromten Zustand wurde am Netzteil eine Stromaufnahme von etwa 0,2–0,4 A beobachtet (gemessen mit einem Motor).
 
-### 3.6 Weboberfläche auf dem Raspberry Pi
+### 3.6 Weboberfläche
 
-`code/midi.py` startet auf dem Pi einen Webserver (Port 8080). Im Browser lassen sich MIDI-Dateien hochladen und auf den vier Motoren abspielen. Angezeigt werden Tonbalken mit Frequenz, Drehzahl je Motor, ein Piano Roll und der Fortschritt.
+Es gibt zwei Varianten:
+
+- **Raspberry Pi Pico (aktuell):** `code/pico_laptop.py` läuft auf dem Laptop (`pip install mido pyserial`, dann `python3 pico_laptop.py`, Browser auf `http://127.0.0.1:8080`). Der Laptop schickt über USB pro Notenwechsel eine Zeile mit vier Frequenzen an den Pico. Auf dem Pico läuft `code/pico.py` (als `main.py` mit MicroPython) und erzeugt die STEP-Impulse per Hardware-PWM. Hochgeladene MIDIs landen in `code/midis/` und werden bei jedem Abspielen neu von der Platte gelesen. Bei jedem Start wird `code/midis/` geleert und mit `code/arrangieren.py` aus `code/originale/` neu befüllt: jedes Lied wird auf vier einstimmige Stimmen im Wohlklang-Bereich der Motoren ohne Dopplungen umgeschrieben. Bekommt der Pico 1,5 s keine Daten, schaltet er die Motoren ab.
+- **Raspberry Pi 3B+ (alt):** `code/pi3_midi.py` läuft direkt auf dem Pi und steuert die GPIOs selbst.
+
+**Tabelle 2a:** Belegung am Pico
+
+| Kanal | Steckplatz | STEP | DIR |
+|---|---|---|---|
+| bass | X | Pin 4 / GP2 | Pin 5 / GP3 |
+| quinte | Y | Pin 6 / GP4 | Pin 7 / GP5 |
+| melodie | Z | Pin 9 / GP6 | Pin 10 / GP7 |
+| terz | A | Pin 11 / GP8 | Pin 12 / GP9 |
+| Enable | EN/GND, linker Pin | Pin 14 / GP10 (aktiv Low) | |
+
+Logikversorgung des Shields: Pin 36 (3V3 OUT) → 5V/GND links, Pin 38 (GND) → 5V/GND rechts.
+
+Beide Varianten starten einen Webserver (Port 8080). Im Browser lassen sich MIDI-Dateien hochladen und auf den vier Motoren abspielen. Angezeigt werden Tonbalken mit Frequenz, Drehzahl je Motor, ein Piano Roll und der Fortschritt.
 
 ![Weboberfläche des Raspberry Pi](docs/assets/img/webplayer.png)
 
 *Abbildung 1:* Weboberfläche während der Wiedergabe (Demo-Daten). Eine interaktive Demo ohne Pi liegt unter `docs/player.html`.
 
-> **Hinweis:** Die Seite hat keinen Login. Hochgeladene Dateien liegen nur im Arbeitsspeicher. Nur im vertrauten Netz verwenden.
+> **Hinweis:** Die Seite hat keinen Login. Beim Pi 3 liegen hochgeladene Dateien nur im Arbeitsspeicher, beim Pico in `code/midis/`. Die Pico-Variante lauscht deshalb nur auf `127.0.0.1` (änderbar über `HOST`).
 
 ---
 
